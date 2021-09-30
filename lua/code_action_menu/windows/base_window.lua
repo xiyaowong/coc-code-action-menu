@@ -76,6 +76,7 @@ function BaseWindow:open(window_configuration_options)
   local window_configuration = self:get_window_configuration(
     window_configuration_options
   )
+  window_configuration.focusable = true
 
   if self.window_number == -1 then
     self.window_number = vim.api.nvim_open_win(
