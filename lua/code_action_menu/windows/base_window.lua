@@ -89,6 +89,8 @@ function BaseWindow:open(window_configuration_options)
     vim.api.nvim_win_set_config(self.window_number, window_configuration)
   end
 
+  vim.wo[self.window_number].winblend = 0
+
   self:after_opened()
 end
 
