@@ -40,7 +40,7 @@ function Command:get_workspace_edit()
 end
 
 function Command:execute()
-  vim.lsp.buf.execute_command(self.server_data)
+  vim.fn.CocActionAsync('doCodeAction', self.server_data)
 end
 
 return Command

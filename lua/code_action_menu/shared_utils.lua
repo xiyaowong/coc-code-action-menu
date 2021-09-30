@@ -24,23 +24,11 @@ local function is_buffer_empty(buffer_number)
   return #buffer_lines == 0 or (#buffer_lines == 1 and #buffer_lines[1] == 0)
 end
 
+local function request_servers_for_actions(mode, cb)
+  if not cb then
+    local all_actions = {}
 
-local function request_servers_for_actions(use_range)
-  vim.validate({ ['request action for range'] = { use_range, 'boolean', true } })
-
-  local line_diagnostics = vim.lsp.diagnostic.get_line_diagnostics()
-  local parameters = use_range and vim.lsp.util.make_given_range_params()
-    or vim.lsp.util.make_range_params()
-  parameters.context = { diagnostics = line_diagnostics }
-  local all_responses = vim.lsp.buf_request_sync(
-    0,
-    'textDocument/codeAction',
-    parameters
-  ) or {}
-  local all_actions = {}
-
-  for _, client_response in pairs(all_responses) do
-    for _, data in ipairs(client_response.result or {}) do
+    for _, data in ipairs(vim.fn.CocAction('codeActions', mode)) do
       local action
 
       if type(data.edit) == 'table' or type(data.command) == 'table' then
@@ -51,9 +39,31 @@ local function request_servers_for_actions(use_range)
 
       table.insert(all_actions, action)
     end
-  end
 
-  return all_actions
+    return all_actions
+  else
+    vim.fn.CocActionAsync('codeActions', mode, function(err, res)
+      if err ~= vim.NIL then
+        return
+      end
+
+      local all_actions = {}
+
+      for _, data in ipairs(res) do
+        local action
+
+        if type(data.edit) == 'table' or type(data.command) == 'table' then
+          action = CodeAction:new(data)
+        else
+          action = Command:new(data)
+        end
+
+        table.insert(all_actions, action)
+      end
+
+      cb(all_actions)
+    end)
+  end
 end
 
 local function order_actions(action_table, key_a, key_b)

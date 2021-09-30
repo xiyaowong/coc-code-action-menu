@@ -1,3 +1,5 @@
+local api = vim.api
+
 local shared_utils = require('code_action_menu.shared_utils')
 local AnchorWindow = require('code_action_menu.windows.anchor_window')
 local MenuWindow = require('code_action_menu.windows.menu_window')
@@ -39,27 +41,40 @@ local function close_warning_message_window()
   end
 end
 
-local function open_code_action_menu()
+local function open_code_action_menu(mode)
+  if vim.g.coc_service_initialized ~= 1 then
+    vim.notify('Coc is not ready!', vim.log.levels.ERROR)
+    return
+  end
   -- Might still be open.
   close_code_action_menu()
   close_warning_message_window()
 
-  local use_range = vim.api.nvim_get_mode().mode ~= 'n'
-  local all_actions = shared_utils.request_servers_for_actions(use_range)
+  mode = mode or api.nvim_get_mode().mode
 
-  if #all_actions == 0 then
-    warning_message_window_instace = WarningMessageWindow:new()
-    warning_message_window_instace:open()
-    vim.api.nvim_command(
-      'autocmd! CursorMoved <buffer> ++once lua require("code_action_menu").close_warning_message_window()'
-    )
-  else
-    anchor_window_instance = AnchorWindow:new()
-    menu_window_instance = MenuWindow:new(all_actions)
-    menu_window_instance:open({
-      window_stack = { anchor_window_instance },
-    })
-  end
+  shared_utils.request_servers_for_actions(mode, function(all_actions)
+    if #all_actions == 0 then
+      warning_message_window_instace = WarningMessageWindow:new()
+      warning_message_window_instace:open()
+      vim.cmd(
+        'autocmd! CursorMoved <buffer> ++once lua require("code_action_menu").close_warning_message_window()'
+      )
+    else
+      anchor_window_instance = AnchorWindow:new()
+      menu_window_instance = MenuWindow:new(all_actions)
+      menu_window_instance:open({
+        window_stack = { anchor_window_instance },
+      })
+    end
+
+    if api.nvim_get_mode().mode:lower() == 'v' then
+      api.nvim_feedkeys(
+        api.nvim_replace_termcodes('<ESC>', true, true, true),
+        'n',
+        false
+      )
+    end
+  end)
 end
 
 local function update_selected_action()
@@ -97,11 +112,7 @@ local function execute_selected_action()
   local selected_action = menu_window_instance:get_selected_action()
 
   if selected_action:is_disabled() then
-    vim.api.nvim_notify(
-      'Can not execute disabled action!',
-      vim.log.levels.ERROR,
-      {}
-    )
+    vim.notify('Can not execute disabled action!', vim.log.levels.ERROR, {})
   else
     close_code_action_menu() -- Close first to execute the action in the correct buffer.
     selected_action:execute()
@@ -111,7 +122,7 @@ end
 local function select_line_and_execute_action(line_number)
   vim.validate({ ['to select menu line number'] = { line_number, 'number' } })
 
-  vim.api.nvim_win_set_cursor(
+  api.nvim_win_set_cursor(
     menu_window_instance.window_number,
     { line_number, 0 }
   )

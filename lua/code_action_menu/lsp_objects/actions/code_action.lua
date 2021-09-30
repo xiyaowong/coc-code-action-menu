@@ -66,7 +66,7 @@ function CodeAction:get_workspace_edit()
       workspace_edit:add_text_document_edit(text_document_edit)
     end
 
-    for uri, edits in ipairs(self.server_data.edit.changes or {}) do
+    for uri, edits in pairs(self.server_data.edit.changes or {}) do
       local data = { uri = uri, edits = edits }
       local text_document_edit = TextDocumentEdit:new(data)
       workspace_edit:add_text_document_edit(text_document_edit)
@@ -77,17 +77,7 @@ function CodeAction:get_workspace_edit()
 end
 
 function CodeAction:execute()
-  if self:is_workspace_edit() then
-    vim.lsp.util.apply_workspace_edit(self.server_data.edit)
-  elseif self:is_command() then
-    vim.lsp.buf.execute_command(self.server_data.command)
-  else
-    vim.api.nvim_notify(
-      'Failed to execute code action of unknown kind!',
-      vim.log.levels.ERROR,
-      {}
-    )
-  end
+  vim.fn.CocActionAsync('doCodeAction', self.server_data)
 end
 
 return CodeAction
