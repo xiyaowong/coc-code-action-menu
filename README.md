@@ -2,7 +2,12 @@
 
 ## Usage
 
-Just replace `<Plug>(coc-codeaction-selected)` to `<Plug>(coc-codeaction-selected-menu)`
+Just replace
+
+- `<Plug>(coc-codeaction-selected)` to `<Plug>(coc-codeaction-selected-menu)`
+- `<Plug>(coc-codeaction)` to`<Plug>(coc-codeaction-menu)`
+- `<Plug>(coc-codeaction-line)`to`<Plug>(coc-codeaction-line-menu)`
+- `<Plug>(coc-codeaction-cursor)`to`<Plug>(coc-codeaction-cursor-menu)`
 
 ---
 
