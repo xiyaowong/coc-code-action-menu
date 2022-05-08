@@ -7,4 +7,4 @@ nnoremap <silent> <Plug>(coc-codeaction-selected-menu)   <CMD>set operatorfunc=<
 
 nnoremap <Plug>(coc-codeaction-menu)             <CMD>require('code_action_menu').open_code_action_menu('')<CR>
 nnoremap <Plug>(coc-codeaction-line-menu)        <CMD>require('code_action_menu').open_code_action_menu('line')<CR>
-nnoremap <Plug>(coc-codeaction-cursor-menu)      <CMD>require('code_action_menu').open_code_action_menu('cursor')CR>
+nnoremap <Plug>(coc-codeaction-cursor-menu)      <CMD>require('code_action_menu').open_code_action_menu('cursor')<CR>
